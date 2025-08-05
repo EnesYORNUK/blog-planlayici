@@ -1,14 +1,9 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, nativeImage } = require('electron');
-const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
 let tray;
-
-// Otomatik güncelleme ayarları
-autoUpdater.autoDownload = false;
-autoUpdater.autoInstallOnAppQuit = true;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -46,7 +41,6 @@ function createTray() {
   
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Uygulamayı Aç', click: () => mainWindow.show() },
-    { label: 'Güncellemeleri Kontrol Et', click: checkForUpdates },
     { type: 'separator' },
     { label: 'Çıkış', click: () => app.quit() }
   ]);
@@ -59,56 +53,19 @@ function createTray() {
   });
 }
 
+// Basit güncelleme kontrolü
 function checkForUpdates() {
-  autoUpdater.checkForUpdates();
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Güncelleme Kontrolü',
+    message: 'Güncellemeler için GitHub sayfasını ziyaret edin: https://github.com/EnesYORNUK/blog-planlayici/releases',
+    buttons: ['Tamam']
+  });
 }
-
-// Güncelleme olayları
-autoUpdater.on('checking-for-update', () => {
-  mainWindow.webContents.send('update-status', 'Güncellemeler kontrol ediliyor...');
-});
-
-autoUpdater.on('update-available', (info) => {
-  dialog.showMessageBox(mainWindow, {
-    type: 'info',
-    title: 'Güncelleme Mevcut',
-    message: `Yeni sürüm ${info.version} mevcut. İndiriliyor...`,
-    buttons: ['Tamam']
-  });
-  autoUpdater.downloadUpdate();
-});
-
-autoUpdater.on('update-not-available', () => {
-  mainWindow.webContents.send('update-status', 'Güncelleme yok');
-});
-
-autoUpdater.on('error', (err) => {
-  mainWindow.webContents.send('update-status', `Güncelleme hatası: ${err.message}`);
-});
-
-autoUpdater.on('download-progress', (progressObj) => {
-  mainWindow.webContents.send('update-progress', progressObj);
-});
-
-autoUpdater.on('update-downloaded', () => {
-  dialog.showMessageBox(mainWindow, {
-    type: 'info',
-    title: 'Güncelleme Hazır',
-    message: 'Güncelleme indirildi. Uygulama yeniden başlatılacak.',
-    buttons: ['Tamam']
-  }).then(() => {
-    autoUpdater.quitAndInstall();
-  });
-});
 
 app.whenReady().then(() => {
   createWindow();
   createTray();
-  
-  // İlk açılışta güncelleme kontrolü
-  setTimeout(() => {
-    checkForUpdates();
-  }, 3000);
 });
 
 app.on('window-all-closed', () => {

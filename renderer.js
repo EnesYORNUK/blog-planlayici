@@ -84,15 +84,6 @@ function setupEventListeners() {
             hideModal();
         }
     });
-    
-    // IPC olayları
-    ipcRenderer.on('update-status', (event, message) => {
-        showNotification(message);
-    });
-    
-    ipcRenderer.on('update-progress', (event, progressObj) => {
-        showNotification(`Güncelleme: %${Math.round(progressObj.percent)}`);
-    });
 }
 
 // Veri yükleme
