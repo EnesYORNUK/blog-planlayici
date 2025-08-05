@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, nativeImage } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
@@ -41,6 +42,7 @@ function createTray() {
   
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Uygulamayı Aç', click: () => mainWindow.show() },
+    { label: 'Güncellemeleri Kontrol Et', click: checkForUpdates },
     { type: 'separator' },
     { label: 'Çıkış', click: () => app.quit() }
   ]);
@@ -53,19 +55,67 @@ function createTray() {
   });
 }
 
-// Basit güncelleme kontrolü
+// Otomatik güncelleme sistemi
 function checkForUpdates() {
+  autoUpdater.checkForUpdatesAndNotify();
+}
+
+// Güncelleme olayları
+autoUpdater.on('checking-for-update', () => {
+  console.log('Güncelleme kontrol ediliyor...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Güncelleme Mevcut',
+    message: `Yeni sürüm mevcut: ${info.version}\nGüncelleme indiriliyor...`,
+    buttons: ['Tamam']
+  });
+});
+
+autoUpdater.on('update-not-available', () => {
   dialog.showMessageBox(mainWindow, {
     type: 'info',
     title: 'Güncelleme Kontrolü',
-    message: 'Güncellemeler için GitHub sayfasını ziyaret edin: https://github.com/EnesYORNUK/blog-planlayici/releases',
+    message: 'Uygulama güncel!',
     buttons: ['Tamam']
   });
-}
+});
+
+autoUpdater.on('error', (err) => {
+  dialog.showMessageBox(mainWindow, {
+    type: 'error',
+    title: 'Güncelleme Hatası',
+    message: `Güncelleme hatası: ${err.message}`,
+    buttons: ['Tamam']
+  });
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`İndirme hızı: ${progressObj.bytesPerSecond}`);
+  console.log(`İndirilen: ${progressObj.percent}%`);
+});
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Güncelleme Hazır',
+    message: 'Güncelleme indirildi. Uygulama yeniden başlatılacak.',
+    buttons: ['Tamam']
+  }).then(() => {
+    autoUpdater.quitAndInstall();
+  });
+});
 
 app.whenReady().then(() => {
   createWindow();
   createTray();
+  
+  // Uygulama başladıktan 5 saniye sonra güncelleme kontrolü yap
+  setTimeout(() => {
+    checkForUpdates();
+  }, 5000);
 });
 
 app.on('window-all-closed', () => {

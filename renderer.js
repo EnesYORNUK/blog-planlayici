@@ -39,23 +39,25 @@ const dataPath = path.join(__dirname, 'data.json');
 
 // Uygulama başlatma
 document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    setupEventListeners();
-    loadData();
-    renderTimeline();
-    renderSchedulerList();
-    checkTodayTasks();
-    startNotificationCheck();
+    // DOM elementlerinin yüklendiğinden emin ol
+    setTimeout(() => {
+        initializeApp();
+        setupEventListeners();
+        loadData();
+        renderTimeline();
+        renderSchedulerList();
+        checkTodayTasks();
+        startNotificationCheck();
+    }, 100);
 });
 
 // Uygulama başlatma
 function initializeApp() {
     // Bugünün tarihini başlangıç tarihi olarak ayarla
-    document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
-    
-    // Form değişikliklerini dinle
-    elements.frequencyType.addEventListener('change', updateFrequencyUnit);
-    elements.endType.addEventListener('change', toggleEndTypeFields);
+    const startDateInput = document.getElementById('startDate');
+    if (startDateInput) {
+        startDateInput.value = moment().format('YYYY-MM-DD');
+    }
     
     // İlk yükleme
     updateFrequencyUnit();
@@ -65,25 +67,51 @@ function initializeApp() {
 // Event listener'ları ayarla
 function setupEventListeners() {
     // Modal işlemleri
-    elements.addSchedulerBtn.addEventListener('click', showModal);
-    elements.closeModal.addEventListener('click', hideModal);
-    elements.cancelBtn.addEventListener('click', hideModal);
-    elements.schedulerForm.addEventListener('submit', handleSchedulerSubmit);
+    if (elements.addSchedulerBtn) {
+        elements.addSchedulerBtn.addEventListener('click', showModal);
+    }
+    if (elements.closeModal) {
+        elements.closeModal.addEventListener('click', hideModal);
+    }
+    if (elements.cancelBtn) {
+        elements.cancelBtn.addEventListener('click', hideModal);
+    }
+    if (elements.schedulerForm) {
+        elements.schedulerForm.addEventListener('submit', handleSchedulerSubmit);
+    }
     
     // Timeline kontrolleri
-    elements.prevMonth.addEventListener('click', () => navigateMonth(-1));
-    elements.nextMonth.addEventListener('click', () => navigateMonth(1));
+    if (elements.prevMonth) {
+        elements.prevMonth.addEventListener('click', () => navigateMonth(-1));
+    }
+    if (elements.nextMonth) {
+        elements.nextMonth.addEventListener('click', () => navigateMonth(1));
+    }
     
     // Header butonları
-    elements.updateBtn.addEventListener('click', () => ipcRenderer.invoke('check-updates'));
-    elements.minimizeBtn.addEventListener('click', () => ipcRenderer.invoke('minimize-to-tray'));
+    if (elements.updateBtn) {
+        elements.updateBtn.addEventListener('click', () => ipcRenderer.invoke('check-updates'));
+    }
+    if (elements.minimizeBtn) {
+        elements.minimizeBtn.addEventListener('click', () => ipcRenderer.invoke('minimize-to-tray'));
+    }
     
     // Modal dışına tıklama
-    elements.schedulerModal.addEventListener('click', (e) => {
-        if (e.target === elements.schedulerModal) {
-            hideModal();
-        }
-    });
+    if (elements.schedulerModal) {
+        elements.schedulerModal.addEventListener('click', (e) => {
+            if (e.target === elements.schedulerModal) {
+                hideModal();
+            }
+        });
+    }
+    
+    // Form değişikliklerini dinle
+    if (elements.frequencyType) {
+        elements.frequencyType.addEventListener('change', updateFrequencyUnit);
+    }
+    if (elements.endType) {
+        elements.endType.addEventListener('change', toggleEndTypeFields);
+    }
 }
 
 // Veri yükleme
@@ -168,6 +196,30 @@ function handleSchedulerSubmit(e) {
     showNotification('Blog zamanlayıcı başarıyla eklendi!');
 }
 
+// Blog silme fonksiyonu
+function deleteScheduler(schedulerId) {
+    if (confirm('Bu blog zamanlayıcısını silmek istediğinizden emin misiniz?')) {
+        // Zamanlayıcıyı listeden kaldır
+        schedulers = schedulers.filter(s => s.id !== schedulerId);
+        
+        // Tamamlanan görevleri de temizle
+        const completedTasksToRemove = Array.from(completedTasks).filter(taskKey => 
+            taskKey.startsWith(`${schedulerId}-`)
+        );
+        completedTasksToRemove.forEach(taskKey => completedTasks.delete(taskKey));
+        
+        // Verileri kaydet
+        saveData();
+        
+        // UI'yi güncelle
+        renderSchedulerList();
+        renderTimeline();
+        checkTodayTasks();
+        
+        showNotification('Blog zamanlayıcısı silindi!');
+    }
+}
+
 // Zamanlayıcı listesi render
 function renderSchedulerList() {
     elements.schedulerList.innerHTML = '';
@@ -183,11 +235,23 @@ function renderSchedulerList() {
         const endText = getEndText(scheduler);
         
         item.innerHTML = `
-            <div class="scheduler-name">${scheduler.companyName}</div>
+            <div class="scheduler-header">
+                <div class="scheduler-name">${scheduler.companyName}</div>
+                <button class="delete-btn" data-id="${scheduler.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
             <div class="scheduler-info">
                 ${scheduler.frequencyValue} ${frequencyText}da bir • ${endText}
             </div>
         `;
+        
+        // Silme butonu için event listener
+        const deleteBtn = item.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteScheduler(scheduler.id);
+        });
         
         item.addEventListener('click', () => {
             selectedScheduler = scheduler;
@@ -335,7 +399,7 @@ function checkTodayTasks() {
     elements.todayTasks.innerHTML = '';
     
     if (todayTasks.length === 0) {
-        elements.todayTasks.innerHTML = '<div style="color: #718096; font-style: italic;">Bugün için görev yok</div>';
+        elements.todayTasks.innerHTML = '<div style="color: #718096; font-style: italic;">Bugün yazılacak blog yok</div>';
         return;
     }
     
@@ -368,7 +432,7 @@ function checkTodayTasks() {
         
         const taskText = document.createElement('div');
         taskText.className = 'task-text';
-        taskText.textContent = `${task.companyName} - Blog yayınla`;
+        taskText.textContent = `${task.companyName} - Blog yaz`;
         
         taskElement.appendChild(checkbox);
         taskElement.appendChild(taskText);
@@ -380,7 +444,7 @@ function checkTodayTasks() {
 function showDayTasks(date, tasks) {
     const dateStr = date.format('DD.MM.YYYY');
     const taskList = tasks.map(task => 
-        `${task.companyName} - Blog yayınla`
+        `${task.companyName} - Blog yaz`
     ).join('\n');
     
     showNotification(`${dateStr} için ${tasks.length} görev:\n${taskList}`);
@@ -409,7 +473,7 @@ function startNotificationCheck() {
             });
             
             if (uncompletedTasks.length > 0) {
-                showNotification(`Bugün ${uncompletedTasks.length} blog göreviniz var!`);
+                showNotification(`Bugün ${uncompletedTasks.length} blog yazmanız gerekiyor!`);
             }
         }
     }, 60000); // Her dakika kontrol et
