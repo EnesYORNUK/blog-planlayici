@@ -1,0 +1,50 @@
+{
+  "name": "blog-planlayici",
+  "version": "1.0.0",
+  "description": "Blog zamanlayıcı uygulaması",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "release": "npm version patch && git add . && git commit -m \"Release v$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\") && git push origin main && git push --tags"
+  },
+  "keywords": ["blog", "scheduler", "timeline", "electron"],
+  "author": "Blog Planlayıcı",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7",
+    "moment": "^2.29.4"
+  },
+  "build": {
+    "appId": "com.blogplanlayici.app",
+    "productName": "Blog Planlayıcı",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-github-username",
+      "repo": "blog-planlayici"
+    }
+  }
+} 

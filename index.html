@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Planlayıcı</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-calendar-alt"></i> Blog Planlayıcı</h1>
+            </div>
+            <div class="header-right">
+                <button id="updateBtn" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Güncelle
+                </button>
+                <button id="minimizeBtn" class="btn btn-secondary">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-plus"></i> Yeni Zamanlayıcı</h3>
+                    <button id="addSchedulerBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Blog Zamanlayıcı Ekle
+                    </button>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-list"></i> Zamanlayıcılar</h3>
+                    <div id="schedulerList" class="scheduler-list">
+                        <!-- Zamanlayıcılar buraya eklenecek -->
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-tasks"></i> Bugünkü Görevler</h3>
+                    <div id="todayTasks" class="today-tasks">
+                        <!-- Bugünkü görevler buraya eklenecek -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Area -->
+            <div class="main-area">
+                <div id="timelineContainer" class="timeline-container">
+                    <div class="timeline-header">
+                        <h2><i class="fas fa-calendar-week"></i> Zaman Çizelgesi</h2>
+                        <div class="timeline-controls">
+                            <button id="prevMonth" class="btn btn-secondary">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span id="currentMonth" class="current-month">Aralık 2024</span>
+                            <button id="nextMonth" class="btn btn-secondary">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="timeline" class="timeline">
+                        <!-- Zaman çizelgesi buraya eklenecek -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for adding scheduler -->
+    <div id="schedulerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus"></i> Yeni Blog Zamanlayıcı</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="schedulerForm">
+                <div class="form-group">
+                    <label for="companyName">Firma Adı:</label>
+                    <input type="text" id="companyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">Başlangıç Tarihi:</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="frequencyType">Yayın Sıklığı:</label>
+                    <select id="frequencyType" required>
+                        <option value="weekly">Haftalık</option>
+                        <option value="monthly">Aylık</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="frequencyValue">Sıklık Değeri:</label>
+                    <input type="number" id="frequencyValue" min="1" max="12" value="1" required>
+                    <span id="frequencyUnit">hafta</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endType">Bitiş Türü:</label>
+                    <select id="endType" required>
+                        <option value="unlimited">Sınırsız</option>
+                        <option value="duration">Süre (Yıl)</option>
+                        <option value="endDate">Bitiş Tarihi</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="durationGroup" style="display: none;">
+                    <label for="durationYears">Süre (Yıl):</label>
+                    <input type="number" id="durationYears" min="1" max="50" value="1">
+                </div>
+                
+                <div class="form-group" id="endDateGroup" style="display: none;">
+                    <label for="endDate">Bitiş Tarihi:</label>
+                    <input type="date" id="endDate">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-content">
+            <i class="fas fa-bell"></i>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html> 
