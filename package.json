@@ -1,6 +1,6 @@
 {
   "name": "blog-planlayici",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Blog zamanlayıcı uygulaması",
   "main": "main.js",
   "scripts": {
@@ -10,7 +10,12 @@
     "dist": "electron-builder --publish=never",
     "release": "npm version patch && git add . && git commit -m \"Release v$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\") && git push origin main && git push --tags"
   },
-  "keywords": ["blog", "scheduler", "timeline", "electron"],
+  "keywords": [
+    "blog",
+    "scheduler",
+    "timeline",
+    "electron"
+  ],
   "author": "Blog Planlayıcı",
   "license": "MIT",
   "devDependencies": {
@@ -47,4 +52,4 @@
       "repo": "blog-planlayici"
     }
   }
-} 
+}
