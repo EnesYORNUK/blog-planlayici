@@ -34,7 +34,9 @@
     },
     "files": [
       "**/*",
-      "!node_modules/**/*"
+      "!node_modules/**/*",
+      "!dist/**/*",
+      "!.github/**/*"
     ],
     "win": {
       "target": "nsis"
